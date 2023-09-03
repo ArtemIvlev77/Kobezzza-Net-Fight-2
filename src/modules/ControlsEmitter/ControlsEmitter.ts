@@ -4,17 +4,16 @@ type PossibleEvent = 'fPress' | 'moveRight' | 'moveLeft' | 'jump'
 export const controlsEmitter = new EventEmitter<PossibleEvent>()
 
 document.addEventListener('keypress', (evt) => {
-  if (evt.key === 'f') {
+  if (evt.code === 'KeyF') {
     controlsEmitter.emit('fPress')
   }
-  if (evt.key === 'a') {
+  if (evt.code === 'KeyA') {
     controlsEmitter.emit('moveLeft')
   }
-  if (evt.key === 'd') {
+  if (evt.code === 'KeyD') {
     controlsEmitter.emit('moveRight')
   }
-  if (evt.key === 'w') {
+  if (evt.code === 'KeyW') {
     controlsEmitter.emit('jump')
   }
-  // console.log(evt);
 })

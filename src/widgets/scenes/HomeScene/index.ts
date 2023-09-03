@@ -31,4 +31,8 @@ export class HomeScene extends BaseScene {
     this.drawTitle()
     this.drawStartText()
   }
+
+  init() { }
+
+  exit() { }
 }

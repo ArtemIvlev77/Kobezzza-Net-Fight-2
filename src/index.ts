@@ -3,6 +3,8 @@ import { controlsEmitter } from "modules/ControlsEmitter";
 import { HomeScene } from "widgets/scenes/HomeScene";
 import { MainScene } from "widgets/scenes/MainScene";
 
+import { connectionEmitter, rtcConnection } from "./modules/WebRTC";
+
 // FIXME think about naming
 class SceneManager {
   canvas: HTMLCanvasElement | null;
@@ -16,20 +18,39 @@ class SceneManager {
     this.canvas = document.querySelector("canvas");
     this.scenes = {
       home: new HomeScene(this.canvas),
-      // FIXME remove hard code from params
-      main: new MainScene({ canvas: this.canvas, isHost: true, connected: false }),
+      main: new MainScene({
+        canvas: this.canvas,
+        isHost: rtcConnection.isHost,
+        connected: rtcConnection.connected,
+      }),
     }
+    this.handleLeft = this.handleLeft.bind(this)
+  }
+
+  handleLeft() {
+    this.toggleTo('home')
   }
 
   init() {
     this.activeScene.add(this.scenes.home)
     this.update()
+
+    connectionEmitter.on('left', this.handleLeft)
   }
 
   update() {
     this.activeScene.forEach((scene) => {
       scene?.update()
     })
+  }
+
+  toggleTo(scene: 'main' | 'home') {
+    this.activeScene.forEach((scene) => {
+      scene?.exit()
+    })
+    this.activeScene.clear()
+    this.activeScene.add(this.scenes[scene])
+    this.scenes[scene].init()
   }
 
   toggleScene() {
