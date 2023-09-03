@@ -17,6 +17,7 @@
     "paths": {
       "app": ["app"],
       "widgets": ["widgets"],
+      "modules": ["modules"],
     },
     "plugins": [
       {
