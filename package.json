@@ -8,6 +8,7 @@
     "build": "webpack --mode production"
   },
   "dependencies": {
+    "agora-rtm-sdk": "^1.5.1",
     "ts-node": "^10.9.1"
   },
   "devDependencies": {

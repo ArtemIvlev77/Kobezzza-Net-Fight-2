@@ -30,6 +30,7 @@ module.exports = {
     alias: {
       "app": path.resolve(__dirname, "./src/app/"),
       "widgets": path.resolve(__dirname, "./src/widgets/"),
+      "modules": path.resolve(__dirname, "./src/modules/"),
     },
     extensions: [".tsx", ".ts", ".js"],
   },
