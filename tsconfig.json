@@ -19,6 +19,7 @@
       "app": ["app"],
       "widgets": ["widgets"],
       "modules": ["modules"],
+      "shared": ["shared"],
     },
     "plugins": [
       {

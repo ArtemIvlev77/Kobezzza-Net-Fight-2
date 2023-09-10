@@ -72,7 +72,6 @@ sceneManager.init()
 // on init we add emitter subscribe (init in every scene)
 // on exit from scene remove subscription from all events (exit in every scene)
 controlsEmitter.on('fPress', () => {
-  console.log('fPress');
   sceneManager.toggleScene()
 })
 

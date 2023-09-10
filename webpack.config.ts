@@ -6,12 +6,12 @@ import ESLintPlugin from 'eslint-webpack-plugin'
 import CompressionPlugin from 'compression-webpack-plugin'
 import CopyPlugin from 'copy-webpack-plugin'
 
-module.exports = (env: unknown, argv: unknown & {mode: string}) => {
+module.exports = (env: unknown, argv: unknown & { mode: string }) => {
   const isProd = argv.mode === 'production'
   const isDev = argv.mode === 'development'
 
   const fileName = (ext: string) => isProd ?
-  `[name].[contenthash].bundle.${ext}` : `[name].bundle.${ext}`
+    `[name].[contenthash].bundle.${ext}` : `[name].bundle.${ext}`
 
   const plugins = () => {
     const base: unknown[] = [
@@ -75,6 +75,7 @@ module.exports = (env: unknown, argv: unknown & {mode: string}) => {
         "app": path.resolve(__dirname, "./src/app/"),
         "widgets": path.resolve(__dirname, "./src/widgets/"),
         "modules": path.resolve(__dirname, "./src/modules/"),
+        "shared": path.resolve(__dirname, "./src/shared/"),
       }
     },
     devServer: {
@@ -93,7 +94,7 @@ module.exports = (env: unknown, argv: unknown & {mode: string}) => {
           use: {
             loader: 'babel-loader',
             options: {
-              presets:  ['@babel/preset-typescript', '@babel/preset-env'],
+              presets: ['@babel/preset-typescript', '@babel/preset-env'],
               plugins: [
                 ["@babel/plugin-proposal-decorators", { "version": "2023-05" }]
               ]
