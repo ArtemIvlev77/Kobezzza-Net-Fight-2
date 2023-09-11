@@ -2,8 +2,7 @@ import "app/styles/init.css";
 import { controlsEmitter } from "modules/ControlsEmitter";
 import { HomeScene } from "widgets/scenes/HomeScene";
 import { MainScene } from "widgets/scenes/MainScene";
-
-import { connectionEmitter, rtcConnection } from "./modules/WebRTC";
+import { connectionEmitter, rtcConnection, debounce, throttle } from "./modules";
 
 // FIXME think about naming
 class SceneManager {
@@ -84,25 +83,28 @@ function animate() {
 }
 animate()
 
-// TODO add jest test for EventEmitter
-// // это просто проверил
-// const id = setInterval(() => {
-//   eventEmitter.emit('update')
-// }, 100)
+// просто пример
+class Player {
+  @throttle(300)
+  jump(count: number) {
+    console.log('jump: ', count)
+  }
 
-// eventEmitter.on('update', () => {
-//   console.log(1)
-// })
+  @debounce(300)
+  attack(count: number) {
+    console.log('attack: ', count)
+  }
+}
 
-// eventEmitter.on('update', () => {
-//   console.log(2)
-// })
+const player = new Player()
+player.jump(1)
+player.jump(2)
+player.jump(3)
+player.jump(4)
+player.jump(5)
 
-// eventEmitter.once('update', () => {
-//   console.log(20)
-// })
-
-// setTimeout(() => {
-//   eventEmitter.off('update')
-//   clearInterval(id)
-// }, 600)
+player.attack(1)
+player.attack(2)
+player.attack(3)
+player.attack(4)
+player.attack(5)
