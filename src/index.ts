@@ -3,15 +3,39 @@ import { controlsEmitter } from "modules/ControlsEmitter";
 import { HomeScene } from "widgets/scenes/HomeScene";
 import { MainScene } from "widgets/scenes/MainScene";
 import { connectionEmitter, rtcConnection, debounce, throttle } from "./modules";
+import { GameScene } from "widgets/scenes/GameScene";
+
+type Scene = 'main' | 'home' | 'game'
+
+export interface SceneManagerI {
+  canvas: HTMLCanvasElement | null;
+  scenes: {
+    home: HomeScene;
+    main: MainScene;
+    game: GameScene;
+  };
+  activeScene: HomeScene | MainScene | GameScene | undefined;
+
+  handleLeft(): void;
+
+  init(): void;
+
+  update(): void;
+
+  toggleTo(scene: Scene): void;
+
+  toggleScene(): void;
+}
 
 // FIXME think about naming
-class SceneManager {
+class SceneManager implements SceneManagerI {
   canvas: HTMLCanvasElement | null;
   scenes: {
     home: HomeScene,
     main: MainScene,
+    game: GameScene,
   };
-  activeScene: Set<HomeScene | MainScene | undefined> = new Set(undefined);
+  activeScene: HomeScene | MainScene | GameScene | undefined = undefined;
 
   constructor() {
     this.canvas = document.querySelector("canvas");
@@ -21,9 +45,12 @@ class SceneManager {
         canvas: this.canvas,
         isHost: rtcConnection.isHost,
         connected: rtcConnection.connected,
+        sceneManager: this,
       }),
+      game: new GameScene(this.canvas)
     }
     this.handleLeft = this.handleLeft.bind(this)
+    this.toggleScene = this.toggleScene.bind(this)
   }
 
   handleLeft() {
@@ -31,34 +58,37 @@ class SceneManager {
   }
 
   init() {
-    this.activeScene.add(this.scenes.home)
+    this.activeScene = this.scenes.home
     this.update()
 
     connectionEmitter.on('left', this.handleLeft)
+    // TODO
+    // I think handlers should be in scenes
+    // on init we add emitter subscribe (init in every scene)
+    // on exit from scene remove subscription from all events (exit in every scene)
+    controlsEmitter.on('fPress', this.toggleScene)
   }
 
   update() {
-    this.activeScene.forEach((scene) => {
-      scene?.update()
-    })
+    this.activeScene?.update()
   }
 
-  toggleTo(scene: 'main' | 'home') {
-    this.activeScene.forEach((scene) => {
-      scene?.exit()
-    })
-    this.activeScene.clear()
-    this.activeScene.add(this.scenes[scene])
-    this.scenes[scene].init()
+  toggleTo(scene: Scene) {
+    this.activeScene?.exit()
+    this.activeScene = this.scenes[scene]
+    this.activeScene.init()
   }
 
   toggleScene() {
+    console.log('toggleScene');
     // Think about Linked list for toggle state to next
     // home -> main -> game(1, 2, 3?) -> end game -> main (cycled)
-    if (this.activeScene.has(this.scenes.home)) {
-      this.activeScene.add(this.scenes.main)
-      this.scenes.main.init()
-      this.activeScene.delete(this.scenes.home)
+    if (this.activeScene instanceof HomeScene) {
+      this.toggleTo('main')
+      controlsEmitter.off('fPress', this.toggleScene)
+    } else if (this.activeScene instanceof MainScene) {
+      this.scenes.game.setBgById(this.activeScene.arena.id)
+      this.toggleTo('game')
     }
     this.update()
   }
@@ -66,14 +96,6 @@ class SceneManager {
 
 const sceneManager = new SceneManager()
 sceneManager.init()
-
-// TODO
-// I think handlers should be in scenes
-// on init we add emitter subscribe (init in every scene)
-// on exit from scene remove subscription from all events (exit in every scene)
-controlsEmitter.on('fPress', () => {
-  sceneManager.toggleScene()
-})
 
 // !!ANIMATION!!
 function animate() {
