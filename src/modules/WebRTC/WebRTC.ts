@@ -5,7 +5,10 @@ import { EventEmitter } from "modules/EventEmitter/EventEmitter";
 type PossibleEvent = 'joined' | 'left' | 'message' | 'connected'
 export const connectionEmitter = new EventEmitter<PossibleEvent>()
 
-export type SupportedMessageType = 'main-scene:change-character' | 'main-scene:is-ready'
+export type SupportedMessageType = 'main-scene:change-character'
+  | 'main-scene:player-is-ready'
+  | 'main-scene:change-arena'
+  | 'main-scene:arena-is-selected'
 type Message = Record<string, unknown> & { type: SupportedMessageType }
 
 // TODO move to .env variable

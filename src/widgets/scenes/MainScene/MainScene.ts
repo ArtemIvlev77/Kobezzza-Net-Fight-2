@@ -3,6 +3,7 @@ import { BaseScene } from "../BaseScene";
 import { SupportedMessageType, connectionEmitter, rtcConnection } from "modules/WebRTC";
 import { MainSceneGamer } from "./MainSceneGamer";
 import { MainSceneArena } from "./MainSceneArena";
+import { SceneManagerI } from "index";
 
 type ConnectionMessage = {
   memberId: string;
@@ -19,11 +20,13 @@ export class MainScene extends BaseScene {
   enemy: MainSceneGamer;
   connectionSound: HTMLAudioElement;
   arena: MainSceneArena;
+  sceneManager: SceneManagerI;
 
-  constructor({ canvas, isHost, connected }: {
+  constructor({ canvas, isHost, connected, sceneManager }: {
     canvas: HTMLCanvasElement | null,
     isHost: boolean,
     connected: boolean,
+    sceneManager: SceneManagerI
   }) {
     super(canvas)
 
@@ -32,6 +35,7 @@ export class MainScene extends BaseScene {
     this.player = new MainSceneGamer({ canvas, isHost, connected, type: 'player' })
     this.enemy = new MainSceneGamer({ canvas, isHost: !isHost, connected, type: 'enemy' })
     this.arena = new MainSceneArena({ canvas, isHost, connected })
+    this.sceneManager = sceneManager
 
     this.connectionSound = new Audio('/assets/sounds/invasion.mp3');
 
@@ -55,8 +59,16 @@ export class MainScene extends BaseScene {
 
   // FIXME think about refactoring
   toggleToPrev() {
-    if (this.playersIsReady && this.isHost) {
+    const isArenaToggle = this.playersIsReady && this.isHost
+    if (isArenaToggle) {
       this.arena.toggleToPrev()
+      rtcConnection.sendMessage({
+        type: 'message',
+        message: {
+          type: 'main-scene:change-arena',
+          arenaId: this.arena.id,
+        },
+      })
     } else {
       this.characterTarget.toggleToPrev()
       rtcConnection.sendMessage({
@@ -71,8 +83,16 @@ export class MainScene extends BaseScene {
 
   // FIXME think about refactoring
   toggleToNext() {
-    if (this.playersIsReady && this.isHost) {
+    const isArenaToggle = this.playersIsReady && this.isHost
+    if (isArenaToggle) {
       this.arena.toggleToNext()
+      rtcConnection.sendMessage({
+        type: 'message',
+        message: {
+          type: 'main-scene:change-arena',
+          arenaId: this.arena.id,
+        },
+      })
     } else {
       this.characterTarget.toggleToNext()
       rtcConnection.sendMessage({
@@ -85,16 +105,27 @@ export class MainScene extends BaseScene {
     }
   }
 
+  // FIXME think about refactoring
+  // split logic for toggle player and arena
   toggleReady() {
     if (this.playersIsReady && this.isHost) {
-      // this.arena.toggleToNext()
-      alert('Switch to next scene')
-    } else {
-      this.characterTarget.toggleReady()
+      this.sceneManager.toggleScene()
       rtcConnection.sendMessage({
         type: 'message',
         message: {
-          type: 'main-scene:is-ready',
+          type: 'main-scene:arena-is-selected',
+        },
+      })
+    } else {
+      this.characterTarget.toggleReady()
+      // FIXME add reactive update
+      if (this.playersIsReady) {
+        this.arena.setPlayerIsReady(true)
+      }
+      rtcConnection.sendMessage({
+        type: 'message',
+        message: {
+          type: 'main-scene:player-is-ready',
           isReady: this.characterTarget.isReady,
         },
       })
@@ -109,6 +140,7 @@ export class MainScene extends BaseScene {
     // TODO think about reactive update
     this.enemy.setConnected(true)
     this.player.setConnected(true)
+    this.arena.setConnected(true)
   }
 
   handleConnected() {
@@ -116,15 +148,17 @@ export class MainScene extends BaseScene {
     // TODO think about reactive update
     this.enemy.setConnected(true)
     this.player.setConnected(true)
+    this.arena.setConnected(true)
   }
 
   handleConnectionMessage({ message }: ConnectionMessage) {
     const data = JSON.parse(message.text) as {
       type: 'string',
       message: {
-        type: SupportedMessageType,
-        characterId: number,
+        type: SupportedMessageType;
+        characterId: number;
         isReady: boolean;
+        arenaId: number;
       }
     }
     const peerTarget = this.characterTarget.type === 'player'
@@ -133,9 +167,18 @@ export class MainScene extends BaseScene {
     if (data.message.type === 'main-scene:change-character') {
       peerTarget.setById(data.message.characterId)
     }
-    if (data.message.type === 'main-scene:is-ready') {
-      console.log('data.message.isReady', data.message.isReady);
+    if (data.message.type === 'main-scene:player-is-ready') {
       peerTarget.setReady(data.message.isReady)
+      // FIXME add reactive update
+      if (this.playersIsReady) {
+        this.arena.setPlayerIsReady(true)
+      }
+    }
+    if (data.message.type === 'main-scene:change-arena') {
+      this.arena.setById(data.message.arenaId)
+    }
+    if (data.message.type === 'main-scene:arena-is-selected') {
+      this.sceneManager.toggleScene()
     }
   }
 
@@ -177,7 +220,7 @@ export class MainScene extends BaseScene {
   init() {
     controlsEmitter.on('moveLeft', this.toggleToPrev)
     controlsEmitter.on('moveRight', this.toggleToNext)
-    controlsEmitter.on('fPress', this.toggleReady)
+    controlsEmitter.on('ePress', this.toggleReady)
 
     connectionEmitter.on('joined', this.handleJoined)
     connectionEmitter.on('connected', this.handleConnected)
@@ -189,7 +232,7 @@ export class MainScene extends BaseScene {
   exit() {
     controlsEmitter.off('moveLeft', this.toggleToPrev)
     controlsEmitter.off('moveRight', this.toggleToNext)
-    controlsEmitter.off('fPress', this.toggleReady)
+    controlsEmitter.off('ePress', this.toggleReady)
 
     connectionEmitter.off('joined', this.handleJoined)
     connectionEmitter.off('connected', this.handleConnected)

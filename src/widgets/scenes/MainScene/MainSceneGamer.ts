@@ -98,6 +98,7 @@ export class MainSceneGamer {
   }) {
     const isEnemy = this.isEnemy
     const isDisabled = this.isReady || (!this.connected && isEnemy)
+    const fillStyle = `rgba(255, 255, 255, ${isDisabled ? 0.5 : 1})`
     const _ctx = this.ctx
 
     if (_ctx) {
@@ -105,7 +106,7 @@ export class MainSceneGamer {
 
       const drawTitle = () => {
         _ctx.font = `${config.font.size}px megapixel`;
-        _ctx.fillStyle = `rgba(255, 255, 255, ${isDisabled ? 0.5 : 1})`;
+        _ctx.fillStyle = fillStyle;
         _ctx.textBaseline = "top";
         _ctx.textAlign = "center";
         _ctx.fillText(
@@ -118,7 +119,7 @@ export class MainSceneGamer {
 
       const drawContainerBorder = () => {
         _ctx.globalAlpha = 1.0;
-        _ctx.strokeStyle = `rgba(255, 255, 255, ${isDisabled ? 0.5 : 1})`;
+        _ctx.strokeStyle = fillStyle;
         _ctx.lineWidth = 2;
         _ctx.strokeRect(offset.x, offset.y, containerSize.width, containerSize.height);
         _ctx.strokeStyle = "#000";
@@ -133,7 +134,7 @@ export class MainSceneGamer {
 
           const drawBack = () => {
             _ctx.globalAlpha = 0.5;
-            _ctx.fillStyle = `rgba(255, 255, 255, ${isDisabled ? 0.5 : 1})`;
+            _ctx.fillStyle = fillStyle;
             _ctx.fillRect(
               xPos,
               yPos,
@@ -149,7 +150,7 @@ export class MainSceneGamer {
               this.id === characterCard.id && !isDisabled
               || this.id === characterCard.id && this.isReady
             ) {
-              _ctx.strokeStyle = `rgba(255, 255, 255, ${isDisabled ? 0.5 : 1})`;
+              _ctx.strokeStyle = fillStyle;
               _ctx.strokeRect(
                 xPos,
                 yPos,

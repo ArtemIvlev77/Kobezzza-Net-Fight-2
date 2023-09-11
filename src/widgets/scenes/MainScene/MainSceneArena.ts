@@ -8,6 +8,7 @@ export class MainSceneArena {
   arenaSprites: HTMLImageElement[];
   isHost: boolean;
   connected: boolean;
+  playersIsReady: boolean;
 
   constructor({ canvas, isHost, connected }: {
     canvas: HTMLCanvasElement | null,
@@ -26,8 +27,11 @@ export class MainSceneArena {
 
     this.isHost = isHost;
     this.connected = connected;
+    this.playersIsReady = false
 
     this.draw = this.draw.bind(this)
+    this.setConnected = this.setConnected.bind(this)
+    this.setPlayerIsReady = this.setPlayerIsReady.bind(this)
   }
 
   get id() {
@@ -51,8 +55,17 @@ export class MainSceneArena {
     }
   }
 
+  setConnected(newState: boolean) {
+    this.connected = newState
+  }
+
   setById(newId: number) {
     this.list.setById(newId)
+  }
+
+  // FIXME add reactive update from parent class
+  setPlayerIsReady(newState: boolean) {
+    this.playersIsReady = newState
   }
 
   toggleToNext() {
@@ -66,6 +79,8 @@ export class MainSceneArena {
   draw() {
     const _ctx = this.ctx
     if (_ctx && this.canvas) {
+      const isDisabled = !this.connected || !this.playersIsReady
+      const fillStyle = `rgba(255, 255, 255, ${isDisabled ? 0.5 : 1})`
       const containerSize = this.#getArenaContainerSize()
       const offset = {
         x: (this.canvas.width - containerSize.width) / 2,
@@ -74,7 +89,7 @@ export class MainSceneArena {
 
       const drawTitle = () => {
         _ctx.font = `${config.font.size}px megapixel`;
-        _ctx.fillStyle = "#fff";
+        _ctx.fillStyle = fillStyle;
         _ctx.textBaseline = "top";
         _ctx.textAlign = "center";
         _ctx.fillText(
@@ -87,7 +102,7 @@ export class MainSceneArena {
 
       const drawContainerBorder = () => {
         _ctx.globalAlpha = 1.0;
-        _ctx.strokeStyle = "#fff";
+        _ctx.strokeStyle = fillStyle;
         _ctx.lineWidth = 2;
         _ctx.strokeRect(offset.x, offset.y, containerSize.width, containerSize.height);
         _ctx.strokeStyle = "#000";
@@ -103,7 +118,7 @@ export class MainSceneArena {
           // Draw arena preview back
           const drawBack = () => {
             _ctx.globalAlpha = 0.5;
-            _ctx.fillStyle = "#fff";
+            _ctx.fillStyle = fillStyle;
             _ctx.fillRect(
               xPos,
               yPos,
@@ -117,7 +132,7 @@ export class MainSceneArena {
           const drawSelectedBorder = () => {
             // TODO add supporting "block arena is active" state
             if (this.id === arenaItem.id) {
-              _ctx.strokeStyle = `rgba(255, 255, 255, 1)`;
+              _ctx.strokeStyle = fillStyle;
               _ctx.strokeRect(
                 xPos,
                 yPos,
@@ -129,13 +144,17 @@ export class MainSceneArena {
           drawSelectedBorder()
 
           const drawPreviewImage = () => {
-            this.ctx?.drawImage(
-              this.arenaSprites[index],
-              xPos,
-              yPos,
-              config.arena.width,
-              config.arena.height,
-            );
+            if (this.ctx) {
+              this.ctx.globalAlpha = isDisabled ? 0.5 : 1;
+              this.ctx.drawImage(
+                this.arenaSprites[index],
+                xPos,
+                yPos,
+                config.arena.width,
+                config.arena.height,
+              );
+              this.ctx.globalAlpha = 1;
+            }
           }
           drawPreviewImage()
         })
