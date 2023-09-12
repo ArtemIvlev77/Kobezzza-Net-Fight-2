@@ -6,6 +6,7 @@ module.exports = {
   moduleNameMapper: {
     "^app(.*)$": "<rootDir>/src/app$1",
     "^widgets(.*)$": "<rootDir>/src/widgets$1",
-    "^modules(.*)$": "<rootDir>/src/modules$1"
+    "^modules(.*)$": "<rootDir>/src/modules$1",
+    "^shared(.*)$": "<rootDir>/src/shared$1"
   }
 };
