@@ -87,6 +87,7 @@ class SceneManager implements SceneManagerI {
       this.toggleTo('main')
       controlsEmitter.off('fPress', this.toggleScene)
     } else if (this.activeScene instanceof MainScene) {
+      // FIXME think about prop drilling
       this.scenes.game.setBgById(this.activeScene.arena.id)
       this.toggleTo('game')
     }
