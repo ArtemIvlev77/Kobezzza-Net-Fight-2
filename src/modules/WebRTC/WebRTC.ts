@@ -1,9 +1,12 @@
+// @ts-nocheck
 import AgoraRTM from "agora-rtm-sdk";
 import type { RtmClient, RtmChannel, RtmMessage } from 'agora-rtm-sdk'
 import { EventEmitter } from "modules/EventEmitter/EventEmitter";
 
 type PossibleEvent = 'joined' | 'left' | 'message' | 'connected'
 export const connectionEmitter = new EventEmitter<PossibleEvent>()
+
+export const avatarEE = new EventEmitter<string>()
 
 export type SupportedMessageType = 'main-scene:change-character'
   | 'main-scene:player-is-ready'
@@ -120,7 +123,7 @@ class WebRTCConnection {
     }
   }
 
-  async handleMessageFromPeer(
+  handleMessageFromPeer(
     message: RtmMessage,
     memberId: string,
   ) {
@@ -132,8 +135,44 @@ class WebRTCConnection {
       this.addAnswer(res.answer)
     }
     if (res.type === 'message') {
+      
       connectionEmitter.emit('message', { message, memberId })
+
+      // console.log(JSON.parse(message.text).message.type)
+
+      switch (JSON.parse(message.text).message.type) {
+        case 'moveRight':
+          avatarEE.emit('moveRight')
+        break;
+
+        case 'moveLeft':
+          avatarEE.emit('moveLeft')
+        break;
+
+        case 'jumping':
+          avatarEE.emit('jumping')
+        break;
+
+        case 'moveRightEnd':
+          avatarEE.emit('moveRightEnd')
+        break;
+
+        case 'moveLeftEnd':
+          avatarEE.emit('moveLeftEnd')
+        break;
+
+        case 'jumpingEnd':
+          avatarEE.emit('jumpingEnd')
+        break;
+      
+        default:
+          break;
+      }
     }
+  }
+
+  get getChannel(): RtmChannel {
+    return this.channel!
   }
 
   sendMessage(

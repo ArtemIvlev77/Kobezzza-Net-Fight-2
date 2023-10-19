@@ -1,4 +1,8 @@
+import { Draw } from "modules/Draw/Draw";
+import { Fighter } from "../../../modules/Figter/Fighter";
 import { arenaList } from "../MainScene/config";
+import { Avatar } from "modules/Figter/Avatar";
+import { connectionEmitter } from "modules/WebRTC";
 
 const DEFAULT_BG_URL = "/assets/sprites/arena-1.png"
 
@@ -7,8 +11,10 @@ export class GameScene {
   imgBg: HTMLImageElement;
   canvas: HTMLCanvasElement | null;
   ctx: CanvasRenderingContext2D | null | undefined;
+  player: Fighter | undefined
+  draw1: Draw | undefined
+  avatar: Avatar | undefined
 
-  // FIXME get image path from arena state
   constructor(
     canvas: HTMLCanvasElement | null,
     imgUrl = DEFAULT_BG_URL,
@@ -57,9 +63,19 @@ export class GameScene {
 
   update() {
     this.drawBg()
+    this.draw1!.darwFighter(this.player!.position, this.player!.size, this.player!.attackBox)
+    this.player!.update()
+    this.draw1!.darwFighter(this.avatar!.position, this.avatar!.size, this.avatar!.attackBox)
+    this.avatar!.update()
   }
 
-  init() { }
+  init() {
+    this.draw1 = new Draw(this.canvas, this.ctx)
+    this.player = new Fighter()
+    this.avatar = new Avatar({x: 400, y: 0})
+    this.player!.onEvents()
+    this.avatar!.onEvents()
+  }
 
   exit() { }
 }
