@@ -1,2 +1,3 @@
 export { connectionEmitter, rtcConnection } from './WebRTC'
-export { debounce, throttle } from './decorators'
+export { debounce, throttle } from './Decorators'
+export { IntersectRanges } from './IntersectRanges'
