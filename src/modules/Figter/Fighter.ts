@@ -1,23 +1,23 @@
 // @ts-nocheck
 import { ee } from "../EventEmitter"
 import { AttackBox } from './AttackBox'
-import { throttle } from '../../modules/decorators'
 import { rtcConnection } from '../WebRTC'
 
 const gravity = 7
 
 export class Fighter {
-  #position
+  position
   #size
-  #velocity
+  velocity
   #attackBox
+  // start = false
 
   constructor(position = {x: 0, y: 0}, size = {width: 50, height: 150}, velocity = {x: 0, y: gravity}) {
-    this.#position = position
+    this.position = position
     this.#size = size
-    this.#velocity = velocity
+    this.velocity = velocity
 
-    this.#attackBox = new AttackBox(this.#position)
+    this.#attackBox = new AttackBox(this.position)
   }
 
   onEvents() {
@@ -33,7 +33,7 @@ export class Fighter {
   get size() {
     const that = this
     return {
-      ...this.#position,
+      ...this.position,
       [Symbol.iterator]() {
         const
           iter = Object.keys(that.#size).values()
@@ -56,20 +56,20 @@ export class Fighter {
     return this.#attackBox
   }
 
-  get position() {
+  get getPosition() {
     const that = this
     return {
-      ...this.#position,
+      ...this.position,
       [Symbol.iterator]() {
         const
-          iter = Object.keys(that.#position).values()
+          iter = Object.keys(that.position).values()
           
         return {
           next() {
             const { value, done } = iter.next()
 
             return {
-              value: that.#position[value],
+              value: that.position[value],
               done
             }
           }
@@ -78,41 +78,51 @@ export class Fighter {
     }
   }
 
-  #onGround() {
-    if(this.#position.y + this.#size.height >= 726) {
-      this.#velocity.y = 0
+  onGround() {
+    if(this.position.y + this.#size.height >= 726) {
+      this.velocity.y = 0
     }
   }
 
   update() {
-    this.#position.y += this.#velocity.y
-    this.#position.x += this.#velocity.x
-    this.#onGround()
+    this.position.y += this.velocity.y
+    this.position.x += this.velocity.x
+    this.onGround()
+
+    rtcConnection.sendMessage({
+      type: 'message',
+      message: {
+        type: JSON.stringify(this.position),
+      },
+    })
   }
   // Moving, паттерн service, миксин
   // декоратор trottel
   // @throttle(1000)
   jump() {
-    this.#velocity.y = -20
+    this.sendData = true
+    this.velocity.y = -20
   }
 
   moveRight() {
-    this.#velocity.x = 2
+    this.sendData = true
+    this.velocity.x = 2
   }
 
   moveLeft() {
-    this.#velocity.x = -2
+    this.sendData = true
+    this.velocity.x = -2
   }
 
   jumpEnd() {
-    this.#velocity.y = gravity
+    this.velocity.y = gravity
   }
 
   moveRightEnd() {
-    this.#velocity.x = 0
+    this.velocity.x = 0
   }
 
   moveLeftEnd() {
-    this.#velocity.x = 0
+    this.velocity.x = 0
   }
 }

@@ -139,35 +139,38 @@ class WebRTCConnection {
       connectionEmitter.emit('message', { message, memberId })
 
       // console.log(JSON.parse(message.text).message.type)
+      avatarEE.emit('p', JSON.parse(message.text).message.type)
+      // if (JSON.parse(message.text).message.type.x != null) {
+      //   avatarEE.emit('p', JSON.parse(message.text).message.type)
+      // }
+      // switch (JSON.parse(message.text).message.type) {
+      //   case 'moveRight':
+      //     avatarEE.emit('moveRight')
+      //   break;
 
-      switch (JSON.parse(message.text).message.type) {
-        case 'moveRight':
-          avatarEE.emit('moveRight')
-        break;
+      //   case 'moveLeft':
+      //     avatarEE.emit('moveLeft')
+      //   break;
 
-        case 'moveLeft':
-          avatarEE.emit('moveLeft')
-        break;
+      //   case 'jumping':
+      //     avatarEE.emit('jumping')
+      //   break;
 
-        case 'jumping':
-          avatarEE.emit('jumping')
-        break;
+      //   case 'moveRightEnd':
+      //     avatarEE.emit('moveRightEnd')
+      //   break;
 
-        case 'moveRightEnd':
-          avatarEE.emit('moveRightEnd')
-        break;
+      //   case 'moveLeftEnd':
+      //     avatarEE.emit('moveLeftEnd')
+      //   break;
 
-        case 'moveLeftEnd':
-          avatarEE.emit('moveLeftEnd')
-        break;
-
-        case 'jumpingEnd':
-          avatarEE.emit('jumpingEnd')
-        break;
+      //   case 'jumpingEnd':
+      //     avatarEE.emit('jumpingEnd')
+      //   break;
       
-        default:
-          break;
-      }
+      //   default:
+      //     break;
+      // }
     }
   }
 

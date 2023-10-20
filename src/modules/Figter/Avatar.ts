@@ -1,6 +1,5 @@
 // @ts-nocheck
 import { Fighter } from "./Fighter";
-import { ee } from "../EventEmitter"
 import { connectionEmitter, avatarEE } from "modules/WebRTC/WebRTC";
 const gravity = 7
 
@@ -10,26 +9,25 @@ export class Avatar extends Fighter {
   }
 
   onEvents() {
-    avatarEE.on('jumping', this.jump.bind(this))
-    avatarEE.on('moveLeft', this.moveLeft.bind(this))
-    avatarEE.on('moveRight', this.moveRight.bind(this))
-    avatarEE.on('jumpingEnd', this.jumpEnd.bind(this))
-    avatarEE.on('moveLeftEnd', this.moveLeftEnd.bind(this))
-    avatarEE.on('moveRightEnd', this.moveRightEnd.bind(this))
-    // avatarEE.on('position', cb(data))
+    // avatarEE.on('jumping', this.jump.bind(this))
+    // avatarEE.on('moveLeft', this.moveLeft.bind(this))
+    // avatarEE.on('moveRight', this.moveRight.bind(this))
+    // avatarEE.on('jumpingEnd', this.jumpEnd.bind(this))
+    // avatarEE.on('moveLeftEnd', this.moveLeftEnd.bind(this))
+    // avatarEE.on('moveRightEnd', this.moveRightEnd.bind(this))
+    avatarEE.on('p', (data) => this.setPosition(JSON.parse(data)))
   }
 
-  // set position(data) {
-  //   this.position = data
-  // }
+  setPosition(data) {
+    console.log('data', data, data.x, data.y)
+    this.position.y = data.y
+    this.position.x = 1316 - data.x
+  }
 
-  // setPosition(position: any): void {
-  //   this.position = position
-  // }
-
-  // update(position) {
-  //   console.log(position)
-  //   super.update()
-  //   this.position = position
-  // }
+  override update() {
+    this.position.y += this.velocity.y
+    this.position.x += this.velocity.x
+    this.onGround()
+    // установить координаты для аватара
+  }
 }

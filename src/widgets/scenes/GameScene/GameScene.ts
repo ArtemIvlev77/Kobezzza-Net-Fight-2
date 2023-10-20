@@ -63,19 +63,21 @@ export class GameScene {
 
   update() {
     this.drawBg()
-    this.draw1!.darwFighter(this.player!.position, this.player!.size, this.player!.attackBox)
+    this.draw1!.darwFighter(this.player!.getPosition, this.player!.size, this.player!.attackBox)
     this.player!.update()
-    this.draw1!.darwFighter(this.avatar!.position, this.avatar!.size, this.avatar!.attackBox)
+    this.draw1!.darwFighter(this.avatar!.getPosition, this.avatar!.size, this.avatar!.attackBox)
     this.avatar!.update()
+    // console.log(this.avatar!.getPosition)
   }
 
   init() {
     this.draw1 = new Draw(this.canvas, this.ctx)
     this.player = new Fighter()
-    this.avatar = new Avatar({x: 400, y: 0})
+    this.avatar = new Avatar()
     this.player!.onEvents()
     this.avatar!.onEvents()
   }
 
   exit() { }
 }
+

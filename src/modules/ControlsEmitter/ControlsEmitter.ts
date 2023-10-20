@@ -25,9 +25,6 @@ document.addEventListener('keypress', (evt) => {
 
 class Controller {
   constructor(ee: EventEmitter<string>) {
-    // rtcConnection.ondatachannel = (event) => {
-    //   console.log('ondatachannel')
-    // }
     window.addEventListener('keydown', (event) => {
       console.log(event.code)
       switch(event.code) {
@@ -40,32 +37,32 @@ class Controller {
         break
 
         case 'KeyD':
-          rtcConnection.sendMessage({
-            type: 'message',
-            message: {
-              type: 'moveRight',
-            },
-          })
+          // rtcConnection.sendMessage({
+          //   type: 'message',
+          //   message: {
+          //     type: 'moveRight',
+          //   },
+          // })
           ee.emit('moveRight')
         break
 
         case 'KeyA':
-          rtcConnection.sendMessage({
-            type: 'message',
-            message: {
-              type: 'moveLeft',
-            },
-          })
+          // rtcConnection.sendMessage({
+          //   type: 'message',
+          //   message: {
+          //     type: 'moveLeft',
+          //   },
+          // })
           ee.emit('moveLeft')
         break
 
         case 'KeyW':
-          rtcConnection.sendMessage({
-            type: 'message',
-            message: {
-              type: 'jumping',
-            },
-          })
+          // rtcConnection.sendMessage({
+          //   type: 'message',
+          //   message: {
+          //     type: 'jumping',
+          //   },
+          // })
           ee.emit('jump')
         break
       }
@@ -74,32 +71,32 @@ class Controller {
     window.addEventListener('keyup', (event) => {
       switch(event.code) {
         case 'KeyD':
-          rtcConnection.sendMessage({
-            type: 'message',
-            message: {
-              type: 'moveRightEnd',
-            },
-          })
+          // rtcConnection.sendMessage({
+          //   type: 'message',
+          //   message: {
+          //     type: 'moveLeftEnd',
+          //   },
+          // })
           ee.emit('moveRightEnd')
         break
 
         case 'KeyA':
-          rtcConnection.sendMessage({
-            type: 'message',
-            message: {
-              type: 'moveLeftEnd',
-            },
-          })
+          // rtcConnection.sendMessage({
+          //   type: 'message',
+          //   message: {
+          //     type: 'moveRightEnd',
+          //   },
+          // })
           ee.emit('moveLeftEnd')
         break
 
         case 'KeyW':
-          rtcConnection.sendMessage({
-            type: 'message',
-            message: {
-              type: 'jumpingEnd',
-            },
-          })
+          // rtcConnection.sendMessage({
+          //   type: 'message',
+          //   message: {
+          //     type: 'jumpingEnd',
+          //   },
+          // })
           ee.emit('jumpEnd')
         break
       }
