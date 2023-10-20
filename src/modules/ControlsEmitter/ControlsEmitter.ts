@@ -1,6 +1,4 @@
-// @ts-nocheck
 import { ee, EventEmitter } from '../EventEmitter'
-import { rtcConnection } from '../WebRTC'
 
 type PossibleEvent = 'fPress' | 'moveRight' | 'moveLeft' | 'jump' | 'ePress'
 export const controlsEmitter = new EventEmitter<PossibleEvent>()
@@ -18,9 +16,6 @@ document.addEventListener('keypress', (evt) => {
   if (evt.code === 'KeyD') {
     controlsEmitter.emit('moveRight')
   }
-  // if (evt.code === 'KeyW') {
-  //   controlsEmitter.emit('jump')
-  // }
 })
 
 class Controller {
@@ -37,32 +32,14 @@ class Controller {
         break
 
         case 'KeyD':
-          // rtcConnection.sendMessage({
-          //   type: 'message',
-          //   message: {
-          //     type: 'moveRight',
-          //   },
-          // })
           ee.emit('moveRight')
         break
 
         case 'KeyA':
-          // rtcConnection.sendMessage({
-          //   type: 'message',
-          //   message: {
-          //     type: 'moveLeft',
-          //   },
-          // })
           ee.emit('moveLeft')
         break
 
         case 'KeyW':
-          // rtcConnection.sendMessage({
-          //   type: 'message',
-          //   message: {
-          //     type: 'jumping',
-          //   },
-          // })
           ee.emit('jump')
         break
       }
@@ -71,32 +48,14 @@ class Controller {
     window.addEventListener('keyup', (event) => {
       switch(event.code) {
         case 'KeyD':
-          // rtcConnection.sendMessage({
-          //   type: 'message',
-          //   message: {
-          //     type: 'moveLeftEnd',
-          //   },
-          // })
           ee.emit('moveRightEnd')
         break
 
         case 'KeyA':
-          // rtcConnection.sendMessage({
-          //   type: 'message',
-          //   message: {
-          //     type: 'moveRightEnd',
-          //   },
-          // })
           ee.emit('moveLeftEnd')
         break
 
         case 'KeyW':
-          // rtcConnection.sendMessage({
-          //   type: 'message',
-          //   message: {
-          //     type: 'jumpingEnd',
-          //   },
-          // })
           ee.emit('jumpEnd')
         break
       }

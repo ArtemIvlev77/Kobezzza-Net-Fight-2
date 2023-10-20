@@ -1,4 +1,3 @@
-// @ts-nocheck
 import AgoraRTM from "agora-rtm-sdk";
 import type { RtmClient, RtmChannel, RtmMessage } from 'agora-rtm-sdk'
 import { EventEmitter } from "modules/EventEmitter/EventEmitter";
@@ -14,17 +13,26 @@ export type SupportedMessageType = 'main-scene:change-character'
   | 'main-scene:arena-is-selected'
 type Message = Record<string, unknown> & { type: SupportedMessageType }
 
+const uid = String(Math.floor(Math.random() * 10000))
+
+let queryString = window.location.search
+let urlParams = new URLSearchParams(queryString)
+let roomId = urlParams.get('room')
+
+if(!roomId) {
+  window.location.href = `?room=${uid}`
+}
+
 // TODO move to .env variable
 const APP_ID = "92e993a84f45433fac4c116aedc52b0a"
 const token = undefined;
-const uid = String(Math.floor(Math.random() * 10000))
 
 const configuration = {
   iceServers: [
     {
       urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302']
     }
-  ]
+  ],
 }
 
 class WebRTCConnection {
@@ -55,6 +63,12 @@ class WebRTCConnection {
     this.handleMessageFromPeer = this.handleMessageFromPeer.bind(this)
   }
 
+  get isFullParty() {
+    // @ts-ignore
+    const memberCount = this.channel.memberCount
+    return memberCount > 2
+  }
+
   async createPeerConnection() {
     this.peerConnection = new RTCPeerConnection(configuration)
   }
@@ -62,8 +76,7 @@ class WebRTCConnection {
   async init() {
     this.client = await AgoraRTM.createInstance(APP_ID)
     await this.client.login({ uid, token })
-    // TODO add roomId support from window.location
-    this.channel = this.client.createChannel('main')
+    this.channel = this.client.createChannel(roomId as string)
     await this.channel.join()
     this.channel.on('MemberJoined', this.handleUserJoined)
     this.channel.on('MemberLeft', this.handleMemberLeft)
@@ -91,6 +104,13 @@ class WebRTCConnection {
     )
       .then(({ hasPeerReceived }: { hasPeerReceived: boolean }) => {
         if (hasPeerReceived) {
+          if (this.isFullParty) {
+            this.leaveChannel()
+            // FIXME add popup
+            console.log('This room is full, please use another room or create your own')
+            window.location.href = '/'
+            return
+          }
           this.connected = true
           connectionEmitter.emit('connected', { memberId })
         }
@@ -135,42 +155,10 @@ class WebRTCConnection {
       this.addAnswer(res.answer)
     }
     if (res.type === 'message') {
-      
       connectionEmitter.emit('message', { message, memberId })
 
-      // console.log(JSON.parse(message.text).message.type)
+      // @ts-ignore
       avatarEE.emit('p', JSON.parse(message.text).message.type)
-      // if (JSON.parse(message.text).message.type.x != null) {
-      //   avatarEE.emit('p', JSON.parse(message.text).message.type)
-      // }
-      // switch (JSON.parse(message.text).message.type) {
-      //   case 'moveRight':
-      //     avatarEE.emit('moveRight')
-      //   break;
-
-      //   case 'moveLeft':
-      //     avatarEE.emit('moveLeft')
-      //   break;
-
-      //   case 'jumping':
-      //     avatarEE.emit('jumping')
-      //   break;
-
-      //   case 'moveRightEnd':
-      //     avatarEE.emit('moveRightEnd')
-      //   break;
-
-      //   case 'moveLeftEnd':
-      //     avatarEE.emit('moveLeftEnd')
-      //   break;
-
-      //   case 'jumpingEnd':
-      //     avatarEE.emit('jumpingEnd')
-      //   break;
-      
-      //   default:
-      //     break;
-      // }
     }
   }
 

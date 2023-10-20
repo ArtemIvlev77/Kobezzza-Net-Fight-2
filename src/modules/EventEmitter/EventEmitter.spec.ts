@@ -53,6 +53,4 @@ describe('EventEmitter', () => {
     expect(cb).toHaveBeenCalledTimes(1);
     expect(cb).toHaveBeenCalledWith(42);
   });
-
-  // Добавьте другие тесты по необходимости
 });

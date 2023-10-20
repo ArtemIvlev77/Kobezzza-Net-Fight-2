@@ -3,10 +3,7 @@ import { controlsEmitter } from "modules/ControlsEmitter";
 import { HomeScene } from "widgets/scenes/HomeScene";
 import { MainScene } from "widgets/scenes/MainScene";
 import {
-  connectionEmitter,
   rtcConnection,
-  // debounce,
-  // throttle
 } from "./modules";
 import { GameScene } from "widgets/scenes/GameScene";
 
@@ -20,8 +17,6 @@ export interface SceneManagerI {
     game: GameScene;
   };
   activeScene: HomeScene | MainScene | GameScene | undefined;
-
-  handleLeft(): void;
 
   init(): void;
 
@@ -54,19 +49,13 @@ class SceneManager implements SceneManagerI {
       }),
       game: new GameScene(this.canvas)
     }
-    this.handleLeft = this.handleLeft.bind(this)
     this.toggleScene = this.toggleScene.bind(this)
-  }
-
-  handleLeft() {
-    this.toggleTo('home')
   }
 
   init() {
     this.activeScene = this.scenes.home
     this.update()
 
-    connectionEmitter.on('left', this.handleLeft)
     // TODO
     // I think handlers should be in scenes
     // on init we add emitter subscribe (init in every scene)
