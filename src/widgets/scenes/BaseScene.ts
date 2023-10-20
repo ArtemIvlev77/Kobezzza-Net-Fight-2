@@ -1,6 +1,8 @@
+import { Widget } from "modules/root";
+
 const HOME_BG_URL = "/assets/sprites/home-bg.png"
 
-export class BaseScene {
+export class BaseScene extends Widget {
   bgImgUrl: string;
   imgBg: HTMLImageElement;
   canvas: HTMLCanvasElement | null;
@@ -10,6 +12,8 @@ export class BaseScene {
     canvas: HTMLCanvasElement | null,
     imgUrl = HOME_BG_URL,
   ) {
+    super()
+
     this.canvas = canvas
     this.ctx = canvas?.getContext("2d");
 

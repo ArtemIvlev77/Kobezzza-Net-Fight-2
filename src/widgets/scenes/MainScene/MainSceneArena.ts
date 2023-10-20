@@ -1,20 +1,18 @@
 import { ToggleableList } from "shared/lib/ToggleableList";
 import { arenaList, config } from "./config";
+import { Widget } from "modules/root";
 
-export class MainSceneArena {
+export class MainSceneArena extends Widget {
   canvas: HTMLCanvasElement | null;
   ctx: CanvasRenderingContext2D | null | undefined;
   list: ToggleableList;
   arenaSprites: HTMLImageElement[];
-  isHost: boolean;
-  connected: boolean;
   playersIsReady: boolean;
 
-  constructor({ canvas, isHost, connected }: {
+  constructor({ canvas }: {
     canvas: HTMLCanvasElement | null,
-    isHost: boolean,
-    connected: boolean,
   }) {
+    super()
     this.canvas = canvas
     this.ctx = canvas?.getContext("2d");
     this.list = new ToggleableList({ list: arenaList })
@@ -25,12 +23,9 @@ export class MainSceneArena {
       return img
     })
 
-    this.isHost = isHost;
-    this.connected = connected;
     this.playersIsReady = false
 
     this.draw = this.draw.bind(this)
-    this.setConnected = this.setConnected.bind(this)
     this.setPlayerIsReady = this.setPlayerIsReady.bind(this)
   }
 
@@ -55,10 +50,6 @@ export class MainSceneArena {
     }
   }
 
-  setConnected(newState: boolean) {
-    this.connected = newState
-  }
-
   setById(newId: number) {
     this.list.setById(newId)
   }
@@ -79,7 +70,7 @@ export class MainSceneArena {
   draw() {
     const _ctx = this.ctx
     if (_ctx && this.canvas) {
-      const isDisabled = !this.connected || !this.playersIsReady
+      const isDisabled = !this.root.connection.connected || !this.playersIsReady
       const fillStyle = `rgba(255, 255, 255, ${isDisabled ? 0.5 : 1})`
       const containerSize = this.#getArenaContainerSize()
       const offset = {

@@ -1,6 +1,7 @@
 import AgoraRTM from "agora-rtm-sdk";
 import type { RtmClient, RtmChannel, RtmMessage } from 'agora-rtm-sdk'
 import { EventEmitter } from "modules/EventEmitter/EventEmitter";
+import { getUrlParams } from "shared/lib/query";
 
 type PossibleEvent = 'joined' | 'left' | 'message' | 'connected'
 export const connectionEmitter = new EventEmitter<PossibleEvent>()
@@ -15,16 +16,13 @@ type Message = Record<string, unknown> & { type: SupportedMessageType }
 
 const uid = String(Math.floor(Math.random() * 10000))
 
-let queryString = window.location.search
-let urlParams = new URLSearchParams(queryString)
-let roomId = urlParams.get('room')
+let roomId = getUrlParams().get('room')
 
 if(!roomId) {
-  window.location.href = `?room=${uid}`
+  // alert('THIS PLACE 1')
+  window.location.href = `/?room=${uid}`
 }
 
-// TODO move to .env variable
-const APP_ID = "92e993a84f45433fac4c116aedc52b0a"
 const token = undefined;
 
 const configuration = {
@@ -35,7 +33,7 @@ const configuration = {
   ],
 }
 
-class WebRTCConnection {
+export class WebRTCConnection {
   appId: string;
   client: RtmClient | null;
   channel: RtmChannel | null;
@@ -61,6 +59,7 @@ class WebRTCConnection {
     this.handleMemberLeft = this.handleMemberLeft.bind(this)
     this.addAnswer = this.addAnswer.bind(this)
     this.handleMessageFromPeer = this.handleMessageFromPeer.bind(this)
+    this.initEventListeners = this.initEventListeners.bind(this)
   }
 
   get isFullParty() {
@@ -69,20 +68,25 @@ class WebRTCConnection {
     return memberCount > 2
   }
 
+  initEventListeners() {
+    window.addEventListener('beforeunload', this.leaveChannel)
+  }
+
   async createPeerConnection() {
     this.peerConnection = new RTCPeerConnection(configuration)
   }
 
   async init() {
-    this.client = await AgoraRTM.createInstance(APP_ID)
+    this.client = await AgoraRTM.createInstance(this.appId)
     await this.client.login({ uid, token })
     this.channel = this.client.createChannel(roomId as string)
     await this.channel.join()
     this.channel.on('MemberJoined', this.handleUserJoined)
     this.channel.on('MemberLeft', this.handleMemberLeft)
     this.client.on('MessageFromPeer', this.handleMessageFromPeer)
-
     this.createOffer(uid)
+
+    this.initEventListeners()
   }
 
   async createOffer(memberId: string) {
@@ -108,6 +112,7 @@ class WebRTCConnection {
             this.leaveChannel()
             // FIXME add popup
             console.log('This room is full, please use another room or create your own')
+            // alert(`THIS PLACE 2 ${this.isFullParty}`)
             window.location.href = '/'
             return
           }
@@ -180,9 +185,3 @@ class WebRTCConnection {
     }
   }
 }
-
-export const rtcConnection = new WebRTCConnection({ appId: APP_ID })
-
-window.addEventListener('beforeunload', () => {
-  rtcConnection.leaveChannel()
-})

@@ -1,9 +1,8 @@
 import { controlsEmitter } from "modules/ControlsEmitter";
 import { BaseScene } from "../BaseScene";
-import { SupportedMessageType, connectionEmitter, rtcConnection } from "modules/WebRTC";
+import { SupportedMessageType, connectionEmitter } from "modules/WebRTC";
 import { MainSceneGamer } from "./MainSceneGamer";
 import { MainSceneArena } from "./MainSceneArena";
-import { SceneManagerI } from "index";
 
 type ConnectionMessage = {
   memberId: string;
@@ -14,28 +13,19 @@ type ConnectionMessage = {
 }
 
 export class MainScene extends BaseScene {
-  isHost: boolean;
-  connected: boolean;
   player: MainSceneGamer;
   enemy: MainSceneGamer;
   connectionSound: HTMLAudioElement;
   arena: MainSceneArena;
-  sceneManager: SceneManagerI;
 
-  constructor({ canvas, isHost, connected, sceneManager }: {
+  constructor({ canvas }: {
     canvas: HTMLCanvasElement | null,
-    isHost: boolean,
-    connected: boolean,
-    sceneManager: SceneManagerI
   }) {
     super(canvas)
 
-    this.isHost = isHost;
-    this.connected = connected;
-    this.player = new MainSceneGamer({ canvas, isHost, connected, type: 'player' })
-    this.enemy = new MainSceneGamer({ canvas, isHost: !isHost, connected, type: 'enemy' })
-    this.arena = new MainSceneArena({ canvas, isHost, connected })
-    this.sceneManager = sceneManager
+    this.player = new MainSceneGamer({ canvas, type: 'player' })
+    this.enemy = new MainSceneGamer({ canvas, type: 'enemy' })
+    this.arena = new MainSceneArena({ canvas })
 
     this.connectionSound = new Audio('/assets/sounds/invasion.mp3');
 
@@ -48,8 +38,8 @@ export class MainScene extends BaseScene {
   }
 
   get characterTarget(): MainSceneGamer {
-    const hostPlayer = this.isHost ? this.player : this.enemy
-    const target = !this.connected ? this.player : hostPlayer
+    const hostPlayer = this.root.connection.isHost ? this.player : this.enemy
+    const target = !this.root.connection.connected ? this.player : hostPlayer
     return target
   }
 
@@ -59,10 +49,10 @@ export class MainScene extends BaseScene {
 
   // FIXME think about refactoring
   toggleToPrev() {
-    const isArenaToggle = this.playersIsReady && this.isHost
+    const isArenaToggle = this.playersIsReady && this.root.connection.isHost
     if (isArenaToggle) {
       this.arena.toggleToPrev()
-      rtcConnection.sendMessage({
+      this.root.connection.sendMessage({
         type: 'message',
         message: {
           type: 'main-scene:change-arena',
@@ -71,7 +61,7 @@ export class MainScene extends BaseScene {
       })
     } else {
       this.characterTarget.toggleToPrev()
-      rtcConnection.sendMessage({
+      this.root.connection.sendMessage({
         type: 'message',
         message: {
           type: 'main-scene:change-character',
@@ -83,10 +73,10 @@ export class MainScene extends BaseScene {
 
   // FIXME think about refactoring
   toggleToNext() {
-    const isArenaToggle = this.playersIsReady && this.isHost
+    const isArenaToggle = this.playersIsReady && this.root.connection.isHost
     if (isArenaToggle) {
       this.arena.toggleToNext()
-      rtcConnection.sendMessage({
+      this.root.connection.sendMessage({
         type: 'message',
         message: {
           type: 'main-scene:change-arena',
@@ -95,7 +85,7 @@ export class MainScene extends BaseScene {
       })
     } else {
       this.characterTarget.toggleToNext()
-      rtcConnection.sendMessage({
+      this.root.connection.sendMessage({
         type: 'message',
         message: {
           type: 'main-scene:change-character',
@@ -108,9 +98,9 @@ export class MainScene extends BaseScene {
   // FIXME think about refactoring
   // split logic for toggle player and arena
   toggleReady() {
-    if (this.playersIsReady && this.isHost) {
-      this.sceneManager.toggleScene()
-      rtcConnection.sendMessage({
+    if (this.playersIsReady && this.root.connection.isHost) {
+      this.root.sceneRoot.toggleScene()
+      this.root.connection.sendMessage({
         type: 'message',
         message: {
           type: 'main-scene:arena-is-selected',
@@ -122,7 +112,7 @@ export class MainScene extends BaseScene {
       if (this.playersIsReady) {
         this.arena.setPlayerIsReady(true)
       }
-      rtcConnection.sendMessage({
+      this.root.connection.sendMessage({
         type: 'message',
         message: {
           type: 'main-scene:player-is-ready',
@@ -134,23 +124,16 @@ export class MainScene extends BaseScene {
 
   handleJoined() {
     // FIXME remove connection logic from class
-    if (rtcConnection.isFullParty) return
-    this.isHost = true
-    this.connected = true
+    if (this.root.connection.isFullParty) return
+    this.root.connection.isHost = true
+    this.root.connection.connected = true
     this.connectionSound.volume = 0.1
     this.connectionSound.play()
-    // TODO think about reactive update
-    this.enemy.setConnected(true)
-    this.player.setConnected(true)
-    this.arena.setConnected(true)
   }
 
   handleConnected() {
-    this.connected = true
-    // TODO think about reactive update
-    this.enemy.setConnected(true)
-    this.player.setConnected(true)
-    this.arena.setConnected(true)
+    // FIXME remove connection logic from class
+    this.root.connection.connected = true
   }
 
   handleConnectionMessage({ message }: ConnectionMessage) {
@@ -180,7 +163,7 @@ export class MainScene extends BaseScene {
       this.arena.setById(data.message.arenaId)
     }
     if (data.message.type === 'main-scene:arena-is-selected') {
-      this.sceneManager.toggleScene()
+      this.root.sceneRoot.toggleScene()
     }
   }
 
@@ -227,8 +210,6 @@ export class MainScene extends BaseScene {
     connectionEmitter.on('joined', this.handleJoined)
     connectionEmitter.on('connected', this.handleConnected)
     connectionEmitter.on('message', (data) => this.handleConnectionMessage(data as ConnectionMessage))
-
-    rtcConnection.init()
   }
 
   exit() {
