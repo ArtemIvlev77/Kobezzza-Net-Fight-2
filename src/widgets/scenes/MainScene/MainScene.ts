@@ -133,6 +133,8 @@ export class MainScene extends BaseScene {
   }
 
   handleJoined() {
+    // FIXME remove connection logic from class
+    if (rtcConnection.isFullParty) return
     this.isHost = true
     this.connected = true
     this.connectionSound.volume = 0.1
