@@ -67,7 +67,6 @@ export class GameScene {
     this.player!.update()
     this.draw1!.darwFighter(this.avatar!.getPosition, this.avatar!.size, this.avatar!.attackBox)
     this.avatar!.update()
-    // console.log(this.avatar!.getPosition)
   }
 
   init() {

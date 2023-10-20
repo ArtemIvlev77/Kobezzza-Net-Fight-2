@@ -1,18 +1,25 @@
-// @ts-nocheck
+import { Widget } from "modules/root";
 import { ee } from "../EventEmitter"
 import { AttackBox } from './AttackBox'
-import { rtcConnection } from '../WebRTC'
+import { SupportedMessageType } from "modules/WebRTC";
 
 const gravity = 7
 
-export class Fighter {
-  position
+type Position = {
+  x: number;
+  y: number;
+}
+
+export class Fighter extends Widget {
+  position: Position;
   #size
   velocity
   #attackBox
   // start = false
 
   constructor(position = {x: 0, y: 0}, size = {width: 50, height: 150}, velocity = {x: 0, y: gravity}) {
+    super()
+
     this.position = position
     this.#size = size
     this.velocity = velocity
@@ -37,12 +44,13 @@ export class Fighter {
       [Symbol.iterator]() {
         const
           iter = Object.keys(that.#size).values()
-          
+
         return {
           next() {
             const { value, done } = iter.next()
 
             return {
+              // @ts-ignore
               value: that.#size[value],
               done
             }
@@ -63,12 +71,13 @@ export class Fighter {
       [Symbol.iterator]() {
         const
           iter = Object.keys(that.position).values()
-          
+
         return {
           next() {
             const { value, done } = iter.next()
 
             return {
+              // @ts-ignore
               value: that.position[value],
               done
             }
@@ -89,10 +98,11 @@ export class Fighter {
     this.position.x += this.velocity.x
     this.onGround()
 
-    rtcConnection.sendMessage({
+    this.root.connection.sendMessage({
       type: 'message',
       message: {
-        type: JSON.stringify(this.position),
+        // FIXME cast looks in this place incorrect
+        type: JSON.stringify(this.position) as SupportedMessageType,
       },
     })
   }
@@ -100,16 +110,19 @@ export class Fighter {
   // декоратор trottel
   // @throttle(1000)
   jump() {
+    // @ts-ignore
     this.sendData = true
     this.velocity.y = -20
   }
 
   moveRight() {
+    // @ts-ignore
     this.sendData = true
     this.velocity.x = 2
   }
 
   moveLeft() {
+    // @ts-ignore
     this.sendData = true
     this.velocity.x = -2
   }

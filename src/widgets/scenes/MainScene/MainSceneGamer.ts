@@ -1,27 +1,23 @@
 import { ToggleableList } from "shared/lib/ToggleableList";
 import { characterList, config } from "./config";
+import { Widget } from "modules/root";
 
-export class MainSceneGamer {
+export class MainSceneGamer extends Widget {
   canvas: HTMLCanvasElement | null;
   ctx: CanvasRenderingContext2D | null | undefined;
   type: 'player' | 'enemy';
   list: ToggleableList;
-  isHost: boolean;
   isReady: boolean;
-  connected: boolean;
   characterSprites: HTMLImageElement[];
 
-  constructor({ canvas, isHost, connected, type }: {
+  constructor({ canvas, type }: {
     canvas: HTMLCanvasElement | null,
-    isHost: boolean;
-    connected: boolean;
     type: 'player' | 'enemy';
   }) {
+    super()
     this.canvas = canvas
     this.ctx = canvas?.getContext("2d");
     this.list = new ToggleableList({ list: characterList })
-    this.isHost = isHost
-    this.connected = connected
     this.type = type
     this.isReady = false
     this.characterSprites = characterList.map((item) => {
@@ -33,7 +29,6 @@ export class MainSceneGamer {
     this.setById = this.setById.bind(this)
     this.toggleToNext = this.toggleToNext.bind(this)
     this.toggleToPrev = this.toggleToPrev.bind(this)
-    this.setConnected = this.setConnected.bind(this)
   }
 
   get isEnemy() {
@@ -60,12 +55,8 @@ export class MainSceneGamer {
     this.list.toggleToPrev()
   }
 
-  setConnected(state: boolean) {
-    this.connected = state
-  }
-
   toggleReady() {
-    if (!this.connected) return
+    if (!this.root.connection.connected) return
     this.isReady = !this.isReady
   }
 
@@ -97,7 +88,7 @@ export class MainSceneGamer {
     title: string,
   }) {
     const isEnemy = this.isEnemy
-    const isDisabled = this.isReady || (!this.connected && isEnemy)
+    const isDisabled = this.isReady || (!this.root.connection.connected && isEnemy)
     const fillStyle = `rgba(255, 255, 255, ${isDisabled ? 0.5 : 1})`
     const _ctx = this.ctx
 
@@ -176,9 +167,9 @@ export class MainSceneGamer {
       drawCharacterCards()
 
       const drawCardPlayerStatus = () => {
-        const text = this.connected && this.type === 'player'
+        const text = this.root.connection.connected && this.type === 'player'
           ? 'Host'
-          : this.connected && this.type === 'enemy'
+          : this.root.connection.connected && this.type === 'enemy'
             ? 'Connected'
             : undefined
         if (text) {
@@ -196,7 +187,7 @@ export class MainSceneGamer {
       drawCardPlayerStatus()
 
       const drawPlayerReadyText = () => {
-        const readyText = this.connected && this.isReady ? 'Ready' : undefined
+        const readyText = this.root.connection.connected && this.isReady ? 'Ready' : undefined
         if (readyText) {
           // Draw right from container
           const posXPlayer = offset.x + (containerSize.width) + (config.card.indent * 2)

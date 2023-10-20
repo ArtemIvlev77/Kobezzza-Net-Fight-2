@@ -73,6 +73,7 @@ module.exports = (env: unknown, argv: unknown & { mode: string }) => {
       extensions: ['.js', '.ts', '.tsx'],
       alias: {
         "app": path.resolve(__dirname, "./src/app/"),
+        "pages": path.resolve(__dirname, "./src/pages/"),
         "widgets": path.resolve(__dirname, "./src/widgets/"),
         "modules": path.resolve(__dirname, "./src/modules/"),
         "shared": path.resolve(__dirname, "./src/shared/"),
